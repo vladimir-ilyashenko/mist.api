@@ -307,7 +307,7 @@ class BaseController(object):
         # check permissions
         check = False
         for condition in self.schedule.conditions:
-            if condition.ctype == 'machines':
+            if condition.type == 'machines':
                 for mid in condition.ids:
                     try:
                         machine = Machine.objects.get(id=mid,
@@ -325,7 +325,7 @@ class BaseController(object):
                         # SEC require permission RUN_SCRIPT on machine
                         auth_context.check_perm("machine", "run_script", mid)
                 check = True
-            elif condition.ctype == 'tags':
+            elif condition.type == 'tags':
                 if action and action not in ['notify']:
                     # SEC require permission ACTION on machine
                     auth_context.check_perm("machine", action, None)
