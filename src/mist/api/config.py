@@ -1242,10 +1242,10 @@ PROVIDERS_WITH_CUSTOM_SIZES = ['vsphere', 'onapp', 'libvirt', 'lxd', 'gig_g8',
                                'kubevirt']
 
 SUPPORTED_PROVIDERS = [
-    # BareMetal
+    # Other
     {
         'title': 'Other Server',
-        'provider': 'bare_metal',
+        'provider': 'other',
         'regions': []
     },
     # Azure
