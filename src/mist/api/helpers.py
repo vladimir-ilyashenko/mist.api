@@ -563,7 +563,7 @@ def transform_key_machine_associations(associations):
     try:
         transformed = [
             [association.machine.cloud.id,
-             association.machine.machine_id,
+             association.machine.external_id,
              association.last_used,
              association.ssh_user,
              association.sudo,
@@ -577,7 +577,7 @@ def transform_key_machine_associations(associations):
             try:
                 transformed.append([
                     association.machine.cloud.id,
-                    association.machine.machine_id,
+                    association.machine.external_id,
                     association.last_used,
                     association.ssh_user,
                     association.sudo,
