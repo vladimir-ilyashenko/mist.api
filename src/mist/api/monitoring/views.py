@@ -46,13 +46,13 @@ def _machine_from_matchdict(request, deleted=False):
             if not deleted:
                 machine = Machine.objects.get(
                     cloud=cloud,
-                    machine_id=request.matchdict['machine'],
+                    external_id=request.matchdict['machine'],
                     state__ne='terminated',
                 )
             else:
                 machine = Machine.objects.get(
                     cloud=cloud,
-                    machine_id=request.matchdict['machine'])
+                    external_id=request.matchdict['machine'])
         except Machine.DoesNotExist:
             raise NotFoundError("Machine %s doesn't exist" %
                                 request.matchdict['machine'])
@@ -70,7 +70,7 @@ def _machine_from_matchdict(request, deleted=False):
             raise NotFoundError("Machine %s doesn't exist" %
                                 request.matchdict['machine_uuid'])
         # used by logging_view_decorator
-        request.environ['machine_id'] = machine.machine_id
+        request.environ['machine_id'] = machine.external_id
         request.environ['cloud_id'] = machine.cloud.id
     auth_context.check_perm('cloud', 'read', machine.cloud.id)
     return machine
@@ -134,7 +134,7 @@ def machine_dashboard(request):
     for i in range(0, len(dashboard['rows'])):
         for j in range(0, len(dashboard['rows'][i]['panels'])):
             dashboard['rows'][i]['panels'][j]['machine'] = [machine.cloud.id,
-                                                            machine.machine_id]
+                                                            machine.external_id]
     return ret
 
 
@@ -220,11 +220,11 @@ def update_monitoring(request):
     if action == 'enable':
         return mist.api.monitoring.methods.enable_monitoring(
             owner=auth_context.owner, cloud_id=machine.cloud.id,
-            machine_id=machine.machine_id, no_ssh=no_ssh, dry=dry)
+            machine_id=machine.external_id, no_ssh=no_ssh, dry=dry)
     elif action == 'disable':
         return mist.api.monitoring.methods.disable_monitoring(
             owner=auth_context.owner, cloud_id=machine.cloud.id,
-            machine_id=machine.machine_id, no_ssh=no_ssh)
+            machine_id=machine.external_id, no_ssh=no_ssh)
 
 
 @view_config(route_name='api_v1_monitoring',
@@ -502,7 +502,7 @@ def update_metric(request):
     if cloud_id and machine_id:
         try:
             machine = Machine.objects.get(cloud=cloud_id,
-                                          machine_id=machine_id)
+                                          external_id=machine_id)
             machine_uuid = machine.id
         except Machine.DoesNotExist:
             machine_uuid = ''

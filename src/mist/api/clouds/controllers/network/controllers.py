@@ -375,7 +375,7 @@ class GigG8NetworkController(BaseNetworkController):
 
         libcloud_node = None
         for node in connection.list_nodes():
-            if node.id == machine.machine_id:
+            if node.id == machine.external_id:
                 libcloud_node = node
                 break
 

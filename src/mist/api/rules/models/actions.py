@@ -138,11 +138,11 @@ class NoDataAction(NotificationAction):
             # If NoData alerts are being triggered for over 24h, disable
             # monitoring and log the action to close any open incidents.
             disable_monitoring(machine.owner, machine.cloud.id,
-                               machine.machine_id, no_ssh=True)
+                               machine.external_id, no_ssh=True)
             log_event(
                 machine.owner.id, 'incident', 'disable_monitoring',
                 cloud_id=machine.cloud.id, machine_id=machine.id,
-                external_id=machine.machine_id, incident_id=incident_id
+                external_id=machine.external_id, incident_id=incident_id
             )
             action = 'Disable Monitoring'
         else:
@@ -163,7 +163,7 @@ class CommandAction(BaseAlertAction):
         from mist.api.methods import ssh_command
         assert isinstance(machine, Machine)
         assert machine.owner == self._instance.owner
-        return ssh_command(machine.owner, machine.cloud.id, machine.machine_id,
+        return ssh_command(machine.owner, machine.cloud.id, machine.external_id,
                            machine.hostname, self.command)
 
     def as_dict(self):
@@ -299,7 +299,7 @@ class MachineAction(BaseAlertAction):
             # Could also be implemented as new method inside the
             # MachineController.
             disable_monitoring(machine.owner, machine.cloud.id,
-                               machine.machine_id, no_ssh=True)
+                               machine.external_id, no_ssh=True)
 
     def as_dict(self):
         return {'type': self.atype, 'action': self.action}

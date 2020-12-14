@@ -393,7 +393,7 @@ class LibvirtMainController(BaseMainController):
                 # Create and save machine entry to database.
                 machine = Machine(
                     cloud=self.cloud,
-                    machine_id=_host.get('host').replace('.', '-'),
+                    external_id=_host.get('host').replace('.', '-'),
                     name=_host.get('alias') or _host.get('host'),
                     ssh_port=ssh_port,
                     last_seen=datetime.datetime.utcnow(),
@@ -503,7 +503,7 @@ class LibvirtMainController(BaseMainController):
         # first check if the host has already been added to the cloud
         try:
             machine = Machine.objects.get(cloud=self.cloud,
-                                          machine_id=host.replace('.', '-'))
+                                          external_id=host.replace('.', '-'))
             machine.name = kwargs.get('name') or host
             machine.ssh_port = ssh_port
             machine.extra = extra
@@ -514,7 +514,7 @@ class LibvirtMainController(BaseMainController):
                 cloud=self.cloud,
                 name=kwargs.get('name') or host,
                 hostname=host,
-                machine_id=host.replace('.', '-'),
+                external_id=host.replace('.', '-'),
                 ssh_port=ssh_port,
                 extra=extra,
                 state=NodeState.RUNNING,
@@ -696,7 +696,7 @@ class OtherMainController(BaseMainController):
             from mist.api.monitoring.methods import enable_monitoring
             from mist.api.machines.models import KeyMachineAssociation
             enable_monitoring(
-                self.cloud.owner, self.cloud.id, machine.machine_id,
+                self.cloud.owner, self.cloud.id, machine.external_id,
                 no_ssh=not (machine.os_type == 'unix' and
                             KeyMachineAssociation.objects(
                                 machine=machine).count())
@@ -736,7 +736,7 @@ class OtherMainController(BaseMainController):
         machine = Machine(
             cloud=self.cloud,
             name=name or host,
-            machine_id=uuid.uuid4().hex,
+            external_id=uuid.uuid4().hex,
             os_type=os_type,
             ssh_port=ssh_port,
             rdp_port=rdp_port,

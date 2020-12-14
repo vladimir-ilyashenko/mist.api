@@ -137,7 +137,7 @@ def post_deploy_steps(self, owner_id, cloud_id, machine_id, monitoring,
             tmp_log('not running state')
             raise self.retry(exc=Exception(), countdown=120, max_retries=30)
 
-        machine = Machine.objects.get(cloud=cloud, machine_id=machine_id,
+        machine = Machine.objects.get(cloud=cloud, external_id=machine_id,
                                       state__ne='terminated')
 
         log_dict = {
@@ -795,7 +795,7 @@ def run_machine_action(owner_id, action, name, machine_uuid):
     try:
         machine = Machine.objects.get(id=machine_uuid, state__ne='terminated')
         cloud_id = machine.cloud.id
-        external_id = machine.machine_id
+        external_id = machine.external_id
         log_dict.update({'cloud_id': cloud_id,
                          'machine_id': machine_uuid,
                          'external_id': external_id})
@@ -1002,7 +1002,7 @@ def run_script(owner, script_id, machine_uuid, params='', host='',
     try:
         machine = Machine.objects.get(id=machine_uuid, state__ne='terminated')
         cloud_id = machine.cloud.id
-        external_id = machine.machine_id
+        external_id = machine.external_id
         ret.update({'cloud_id': cloud_id, 'external_id': external_id})
         # cloud = Cloud.objects.get(owner=owner, id=cloud_id, deleted=None)
         script = Script.objects.get(owner=owner, id=script_id, deleted=None)
@@ -1010,7 +1010,7 @@ def run_script(owner, script_id, machine_uuid, params='', host='',
         if not host:
             # FIXME machine.cloud.ctl.compute.list_machines()
             for machine in list_machines(owner, cloud_id):
-                if machine['machine_id'] == external_id:
+                if machine['external_id'] == external_id:
                     ips = [ip for ip in machine['public_ips'] if ':' not in ip]
                     # get private IPs if no public IP is available
                     if not ips:

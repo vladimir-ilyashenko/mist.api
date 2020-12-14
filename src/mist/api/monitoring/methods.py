@@ -280,7 +280,7 @@ def check_monitoring(owner):
     )
 
     for machine in machines:
-        monitored_machines.append([machine.cloud.id, machine.machine_id])
+        monitored_machines.append([machine.cloud.id, machine.external_id])
         try:
             commands = machine.monitoring.get_commands()
         except Exception as exc:
@@ -288,7 +288,7 @@ def check_monitoring(owner):
             commands = {}
         monitored_machines_2[machine.id] = {
             "cloud_id": machine.cloud.id,
-            "machine_id": machine.machine_id,
+            "machine_id": machine.external_id,
             "installation_status": (
                 machine.monitoring.installation_status.as_dict()
             ),
@@ -297,7 +297,7 @@ def check_monitoring(owner):
         for metric_id in machine.monitoring.metrics:
             if metric_id in custom_metrics:
                 machines = custom_metrics[metric_id]["machines"]
-                machines.append((machine.cloud.id, machine.machine_id))
+                machines.append((machine.cloud.id, machine.external_id))
 
     ret = {
         "machines": monitored_machines,
@@ -382,7 +382,7 @@ def enable_monitoring(
     except Cloud.DoesNotExist:
         raise NotFoundError("Cloud does not exist")
     try:
-        machine = Machine.objects.get(cloud=cloud, machine_id=machine_id)
+        machine = Machine.objects.get(cloud=cloud, external_id=machine_id)
     except Machine.DoesNotExist:
         raise NotFoundError("Machine %s doesn't exist" % machine_id)
     if machine.monitoring.hasmonitoring:
@@ -507,7 +507,7 @@ def disable_monitoring(owner, cloud_id, machine_id, no_ssh=False, job_id=""):
     except Cloud.DoesNotExist:
         raise NotFoundError("Cloud does not exist")
     try:
-        machine = Machine.objects.get(cloud=cloud, machine_id=machine_id)
+        machine = Machine.objects.get(cloud=cloud, external_id=machine_id)
     except Machine.DoesNotExist:
         raise NotFoundError("Machine %s doesn't exist" % machine_id)
     if not machine.monitoring.hasmonitoring:
@@ -580,7 +580,7 @@ def disable_monitoring_cloud(owner, cloud_id, no_ssh=False):
     for machine in machines:
         try:
             disable_monitoring(
-                owner, cloud_id, machine.machine_id, no_ssh=no_ssh
+                owner, cloud_id, machine.external_id, no_ssh=no_ssh
             )
         except Exception as exc:
             log.error(
@@ -682,7 +682,7 @@ def undeploy_python_plugin(machine, plugin_id):
     # Run the command over SSH.
     shell = mist.api.shell.Shell(machine.ctl.get_host())
     key_id, ssh_user = shell.autoconfigure(
-        machine.owner, machine.cloud.id, machine.machine_id
+        machine.owner, machine.cloud.id, machine.external_id
     )
     retval, stdout = shell.command(script)
     shell.disconnect()
