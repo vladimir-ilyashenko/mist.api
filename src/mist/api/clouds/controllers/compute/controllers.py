@@ -147,7 +147,7 @@ class AmazonComputeController(BaseComputeController):
         from mist.api.networks.models import Network
         try:
             network = Network.objects.get(cloud=self.cloud,
-                                          network_id=network_id,
+                                          external_id=network_id,
                                           missing_since=None)
         except Network.DoesNotExist:
             network = None
@@ -539,7 +539,7 @@ class GigG8ComputeController(BaseComputeController):
             from mist.api.networks.models import Network
             try:
                 machine.network = Network.objects.get(cloud=self.cloud,
-                                                      network_id=network_id,
+                                                      external_id=network_id,
                                                       missing_since=None)
             except Network.DoesNotExist:
                 machine.network = None
@@ -616,7 +616,7 @@ class GigG8ComputeController(BaseComputeController):
         networks = self.cloud.ctl.compute.connection.ex_list_networks()
         network = None
         for net in networks:
-            if net.id == machine.network.network_id:
+            if net.id == machine.network.external_id:
                 network = net
                 break
 
@@ -930,7 +930,7 @@ class AzureArmComputeController(BaseComputeController):
             from mist.api.networks.models import Network
             try:
                 network = Network.objects.get(cloud=self.cloud,
-                                              network_id=network_id,
+                                              external_id=network_id,
                                               missing_since=None)
                 if network != machine.network:
                     machine.network = network
@@ -938,7 +938,7 @@ class AzureArmComputeController(BaseComputeController):
             except me.DoesNotExist:
                 pass
 
-        network_id = machine.network.network_id if machine.network else ''
+        network_id = machine.network.external_id if machine.network else ''
         if machine.extra.get('network') != network_id:
             machine.extra['network'] = network_id
             updated = True

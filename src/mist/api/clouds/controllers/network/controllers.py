@@ -62,7 +62,7 @@ class AzureArmNetworkController(BaseNetworkController):
                     network.extra['nics'].append(nic_id)
 
     def _list_subnets__fetch_subnets(self, network):
-        l_network = AzureNetwork(network.network_id,
+        l_network = AzureNetwork(network.external_id,
                                  network.name, '', network.extra)
         return self.cloud.ctl.compute.connection.ex_list_subnets(l_network)
 
@@ -73,7 +73,7 @@ class AzureArmNetworkController(BaseNetworkController):
         networks = self.cloud.ctl.compute.connection.ex_list_networks()
         network = None
         for net in networks:
-            if net.id == subnet.network.network_id:
+            if net.id == subnet.network.external_id:
                 network = net
                 break
         subnets = self.cloud.ctl.compute.connection.ex_list_subnets(network)
@@ -96,7 +96,7 @@ class AmazonNetworkController(BaseNetworkController):
         rename_kwargs(kwargs, 'cidr', 'cidr_block')
 
     def _create_subnet__prepare_args(self, subnet, kwargs):
-        kwargs['vpc_id'] = subnet.network.network_id
+        kwargs['vpc_id'] = subnet.network.external_id
         rename_kwargs(kwargs, 'cidr', 'cidr_block')
 
     def _list_networks__cidr_range(self, network, libcloud_network):
@@ -108,7 +108,7 @@ class AmazonNetworkController(BaseNetworkController):
         network.instance_tenancy = tenancy
 
     def _list_subnets__fetch_subnets(self, network):
-        kwargs = {'filters': {'vpc-id': network.network_id}}
+        kwargs = {'filters': {'vpc-id': network.external_id}}
         return self.cloud.ctl.compute.connection.ex_list_subnets(**kwargs)
 
     def _list_subnets__cidr_range(self, subnet, libcloud_subnet):
@@ -124,12 +124,12 @@ class AmazonNetworkController(BaseNetworkController):
         self.cloud.ctl.compute.connection.ex_delete_subnet(libcloud_subnet)
 
     def _get_libcloud_network(self, network):
-        kwargs = {'network_ids': [network.network_id]}
+        kwargs = {'network_ids': [network.external_id]}
         networks = self.cloud.ctl.compute.connection.ex_list_networks(**kwargs)
         if networks:
             return networks[0]
-        raise NetworkNotFoundError('Network %s with network_id %s' %
-                                   (network.name, network.network_id))
+        raise NetworkNotFoundError('Network %s with external_id %s' %
+                                   (network.name, network.external_id))
 
     def _get_libcloud_subnet(self, subnet):
         kwargs = {'subnet_ids': [subnet.subnet_id]}
@@ -186,7 +186,7 @@ class GoogleNetworkController(BaseNetworkController):
 class OpenStackNetworkController(BaseNetworkController):
 
     def _create_subnet__prepare_args(self, subnet, kwargs):
-        kwargs['network_id'] = subnet.network.network_id
+        kwargs['network_id'] = subnet.network.external_id
 
     def _list_networks__postparse_network(self, network, libcloud_network,
                                           r_groups=[]):
@@ -203,7 +203,7 @@ class OpenStackNetworkController(BaseNetworkController):
             setattr(network, field, value)
 
     def _list_subnets__fetch_subnets(self, network):
-        kwargs = {'filters': {'network_id': network.network_id}}
+        kwargs = {'filters': {'network_id': network.external_id}}
         return self.cloud.ctl.compute.connection.ex_list_subnets(**kwargs)
 
     def _list_subnets__postparse_subnet(self, subnet, libcloud_subnet):
@@ -363,7 +363,7 @@ class GigG8NetworkController(BaseNetworkController):
         g8_network = None
 
         for _network in connection.ex_list_networks():
-            if network.network_id == _network.id:
+            if network.external_id == _network.id:
                 g8_network = _network
                 break
 
@@ -373,7 +373,7 @@ class GigG8NetworkController(BaseNetworkController):
         connection = network.cloud.ctl.compute.connection
         g8_network = None
         for _network in connection.ex_list_networks():
-            if network.network_id == _network.id:
+            if network.external_id == _network.id:
                 g8_network = _network
                 break
 
@@ -405,7 +405,7 @@ class GigG8NetworkController(BaseNetworkController):
         connection = network.cloud.ctl.compute.connection
         g8_network = None
         for _network in connection.ex_list_networks():
-            if network.network_id == _network.id:
+            if network.external_id == _network.id:
                 g8_network = _network
                 break
 
