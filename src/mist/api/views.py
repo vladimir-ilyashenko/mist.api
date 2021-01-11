@@ -399,7 +399,7 @@ def login(request):
                 if len(logins) > max_logins:
                     log_event(org=user.id, user_id=user.id,
                               event_type='incident',
-                              action='login_rate_limiting',
+                              action='login-rate-limiting',
                               ip=ip_from_request(request))
                     # alert admins something nasty is going on
                     subject = config.FAILED_LOGIN_ATTEMPTS_EMAIL_SUBJECT

@@ -165,7 +165,7 @@ def post_deploy_steps(self, owner_id, cloud_id, machine_id, monitoring,
                 }]
                 schedule_info = Schedule.add(auth_context, name, **schedule)
                 tmp_log("A new scheduler was added")
-                log_event(action='Add scheduler entry',
+                log_event(action='add-scheduler-entry',
                           scheduler=schedule_info.as_dict(), **log_dict)
             except Exception as e:
                 print(repr(e))
@@ -173,7 +173,7 @@ def post_deploy_steps(self, owner_id, cloud_id, machine_id, monitoring,
                 notify_user(owner, "add scheduler entry failed for "
                                    "machine %s" % machine_id, repr(e),
                             error=error)
-                log_event(action='Add scheduler entry failed',
+                log_event(action='add-scheduler-entry-failed',
                           error=error, **log_dict)
 
         try:
@@ -187,10 +187,10 @@ def post_deploy_steps(self, owner_id, cloud_id, machine_id, monitoring,
 
                     dns_cls = RECORDS[kwargs['type']]
                     dns_cls.add(owner=owner, **kwargs)
-                    log_event(action='Create_A_record', hostname=hostname,
+                    log_event(action='create-A-record', hostname=hostname,
                               **log_dict)
                 except Exception as exc:
-                    log_event(action='Create_A_record', hostname=hostname,
+                    log_event(action='Create-A-record', hostname=hostname,
                               error=str(exc), **log_dict)
 
             from mist.api.shell import Shell
@@ -264,7 +264,7 @@ def post_deploy_steps(self, owner_id, cloud_id, machine_id, monitoring,
                 tmp_log('executed script_id %s', script_id)
             elif script:
                 tmp_log('will run script')
-                log_event(action='deployment_script_started', command=script,
+                log_event(action='deployment-script-started', command=script,
                           **log_dict)
                 start_time = time()
                 retval, output = shell.command(script)
@@ -282,7 +282,7 @@ def post_deploy_steps(self, owner_id, cloud_id, machine_id, monitoring,
                             duration=execution_time,
                             retval=retval,
                             error=retval > 0)
-                log_event(action='deployment_script_finished',
+                log_event(action='deployment-script-finished',
                           error=retval > 0,
                           return_value=retval,
                           command=script,
@@ -309,7 +309,7 @@ def post_deploy_steps(self, owner_id, cloud_id, machine_id, monitoring,
                     notify_admin('Enable monitoring on creation failed for '
                                  'user %s machine %s: %r'
                                  % (str(owner), machine_id, e))
-                    log_event(action='enable_monitoring_failed', error=repr(e),
+                    log_event(action='enable-monitoring-failed', error=repr(e),
                               **log_dict)
 
             if post_script_id:
@@ -322,7 +322,7 @@ def post_deploy_steps(self, owner_id, cloud_id, machine_id, monitoring,
                 error = ret['error']
                 tmp_log('executed post_script_id %s', post_script_id)
 
-            log_event(action='post_deploy_finished', error=error, **log_dict)
+            log_event(action='post-deploy-finished', error=error, **log_dict)
 
         except (ServiceUnavailableError, SSHException) as exc:
             tmp_log(repr(exc))
@@ -338,9 +338,9 @@ def post_deploy_steps(self, owner_id, cloud_id, machine_id, monitoring,
         log_event(
             owner.id,
             event_type='job',
-            action='post_deploy_finished',
-            cloud_id=cloud_id,
-            machine_id=machine_id,
+            action='post-deploy-finished',
+            cloud=cloud_id,
+            machine=machine_id,
             enable_monitoring=bool(monitoring),
             command=script,
             error="Couldn't connect to run post deploy steps.",
@@ -615,11 +615,11 @@ def create_machine_async(
         for i in range(1, quantity + 1):
             names.append('%s-%d' % (machine_name, i))
 
-    log_event(auth_context.owner.id, 'job', 'async_machine_creation_started',
+    log_event(auth_context.owner.id, 'job', 'async-machine-creation-started',
               user_id=auth_context.user.id, job_id=job_id, job=job,
-              cloud_id=cloud_id, script=script, script_id=script_id,
+              cloud=cloud_id, script=script, script=script_id,
               script_params=script_params, monitoring=monitoring,
-              persist=persist, quantity=quantity, key_id=key_id,
+              persist=persist, quantity=quantity, key=key_id,
               machine_names=names, volumes=volumes)
 
     specs = []
@@ -673,7 +673,7 @@ def create_machine_async(
         finally:
             name = args[3]
             log_event(
-                auth_context.owner.id, 'job', 'machine_creation_finished',
+                auth_context.owner.id, 'job', 'machine-creation-finished',
                 job=job, job_id=job_id, cloud_id=cloud_id, machine_name=name,
                 error=error, external_id=node.get('id', ''),
                 user_id=auth_context.user.id
@@ -725,7 +725,7 @@ def group_machines_actions(owner_id, action, name, machines_uuids):
         'event_type': 'job',
         'error': False,
     }
-    log_event(action='schedule_started', **log_dict)
+    log_event(action='schedule-started', **log_dict)
     log.info('Schedule action started: %s', log_dict)
 
     for machine_uuid in machines_uuids:
@@ -757,7 +757,7 @@ def group_machines_actions(owner_id, action, name, machines_uuids):
                     'total_run_count': schedule.total_run_count or 0,
                      'error': log_dict['error']}
                     )
-    log_event(action='schedule_finished', **log_dict)
+    log_event(action='schedule-finished', **log_dict)
     if log_dict['error']:
         log.info('Schedule action failed: %s', log_dict)
     else:
@@ -818,45 +818,45 @@ def run_machine_action(owner_id, action, name, machine_uuid):
             list_machines(owner, cloud_id)
 
             if action == 'start':
-                log_event(action='Start', **log_dict)
+                log_event(action='start', **log_dict)
                 try:
                     machine.ctl.start()
                 except Exception as exc:
                     log_dict['error'] = '%s Machine in %s state' % (
                         exc, machine.state)
-                    log_event(action='Start failed', **log_dict)
+                    log_event(action='start-failed', **log_dict)
                 else:
-                    log_event(action='Start succeeded', **log_dict)
+                    log_event(action='start-succeeded', **log_dict)
             elif action == 'stop':
-                log_event(action='Stop', **log_dict)
+                log_event(action='stop', **log_dict)
                 try:
                     machine.ctl.stop()
                 except Exception as exc:
                     log_dict['error'] = '%s Machine in %s state' % (
                         exc, machine.state)
-                    log_event(action='Stop failed', **log_dict)
+                    log_event(action='stop-failed', **log_dict)
                 else:
-                    log_event(action='Stop succeeded', **log_dict)
+                    log_event(action='stop-succeeded', **log_dict)
             elif action == 'reboot':
-                log_event(action='Reboot', **log_dict)
+                log_event(action='reboot', **log_dict)
                 try:
                     machine.ctl.reboot()
                 except Exception as exc:
                     log_dict['error'] = '%s Machine in %s state' % (
                         exc, machine.state)
-                    log_event(action='Reboot failed', **log_dict)
+                    log_event(action='reboot-failed', **log_dict)
                 else:
-                    log_event(action='Reboot succeeded', **log_dict)
+                    log_event(action='reboot-succeeded', **log_dict)
             elif action == 'destroy':
-                log_event(action='Destroy', **log_dict)
+                log_event(action='destroy', **log_dict)
                 try:
                     destroy_machine(owner, cloud_id, external_id)
                 except Exception as exc:
                     log_dict['error'] = '%s Machine in %s state' % (
                         exc, machine.state)
-                    log_event(action='Destroy failed', **log_dict)
+                    log_event(action='destroy-failed', **log_dict)
                 else:
-                    log_event(action='Destroy succeeded', **log_dict)
+                    log_event(action='destroy-succeeded', **log_dict)
             elif action == 'notify':
                 mails = []
                 for _user in [machine.owned_by, machine.created_by]:
@@ -899,8 +899,8 @@ def run_machine_action(owner_id, action, name, machine_uuid):
         from mist.api.methods import notify_user
         notify_user(
             owner, title,
-            cloud_id=cloud_id,
-            machine_id=external_id,
+            cloud=cloud_id,
+            machine=external_id,
             duration=log_dict['finished_at'] - log_dict['started_at'],
             error=log_dict.get('error'),
         )
@@ -938,7 +938,7 @@ def group_run_script(owner_id, script_id, name, machines_uuids, params=''):
         'job_id': job_id,
     }
 
-    log_event(action='schedule_started', **log_dict)
+    log_event(action='schedule-started', **log_dict)
     log.info('Schedule started: %s', log_dict)
 
     for machine_uuid in machines_uuids:
@@ -953,7 +953,7 @@ def group_run_script(owner_id, script_id, name, machines_uuids, params=''):
                      'total_run_count': schedule.total_run_count or 0,
                      'error': log_dict['error']}
                     )
-    log_event(action='schedule_finished', **log_dict)
+    log_event(action='schedule-finished', **log_dict)
     if log_dict['error']:
         log.info('Schedule run_script failed: %s', log_dict)
     else:
@@ -1053,7 +1053,7 @@ def run_script(owner, script_id, machine_uuid, params='', host='',
         ret['command'] = command
     except Exception as exc:
         ret['error'] = str(exc)
-    log_event(event_type='job', action=action_prefix + 'script_started', **ret)
+    log_event(event_type='job', action=action_prefix + 'script-started', **ret)
     log.info('Script started: %s', ret)
     if not ret['error']:
         try:
@@ -1085,7 +1085,7 @@ def run_script(owner, script_id, machine_uuid, params='', host='',
             ret['error'] = 'Script execution time limit exceeded'
         except Exception as exc:
             ret['error'] = str(exc)
-    log_event(event_type='job', action=action_prefix + 'script_finished',
+    log_event(event_type='job', action=action_prefix + 'script-finished',
               **ret)
     if ret['error']:
         log.info('Script failed: %s', ret)

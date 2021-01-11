@@ -59,10 +59,10 @@ def dramatiq_create_machine_async(
     # scripts=script, script_id=script_id, script_params=script_params
     # persist=persist
 
-    log_event(auth_context.owner.id, 'job', 'async_machine_creation_started',
+    log_event(auth_context.owner.id, 'job', 'async-machine-creation-started',
               user_id=auth_context.user.id, job_id=job_id, job=job,
-              cloud_id=cloud.id, monitoring=plan.get('monitoring', False),
-              quantity=plan.get('quantity'), key_id=plan.get('key'),
+              cloud=cloud.id, monitoring=plan.get('monitoring', False),
+              quantity=plan.get('quantity'), key=plan.get('key'),
               machine_name=plan.get('machine_name'),
               volumes=plan.get('volumes'))
 
@@ -249,9 +249,9 @@ def dramatiq_ssh_tasks(auth_context_serialized, cloud_id, key_id, host,
             notify_admin('Enable monitoring on creation failed for '
                          'user %s machine %s: %r'
                          % (str(auth_context.owner), machine_id, e))
-            log_event(action='enable_monitoring_failed', error=repr(e),
+            log_event(action='enable-monitoring-failed', error=repr(e),
                       **log_dict)
-    log_event(action='post_deploy_finished', error=False, **log_dict)
+    log_event(action='post-deploy-finished', error=False, **log_dict)
     # TODO catch other exceptions
 
 
@@ -286,7 +286,7 @@ def add_schedules(auth_context, external_id, machine_id,
             schedule_info = Schedule.add(auth_context, name, **schedule)
             tmp_log("A new scheduler was added")
             log_event(
-                action="Add scheduler entry",
+                action="add-scheduler-entry",
                 scheduler=schedule_info.as_dict(),
                 **log_dict
             )
@@ -300,7 +300,7 @@ def add_schedules(auth_context, external_id, machine_id,
                 error=error,
             )
             log_event(
-                action="Add scheduler entry failed", error=error, **log_dict
+                action="add-scheduler-entry-failed", error=error, **log_dict
             )
 
 
@@ -315,10 +315,10 @@ def add_dns_record(auth_context, host, log_dict, fqdn):
 
             dns_cls = RECORDS[kwargs["type"]]
             dns_cls.add(owner=auth_context.owner, **kwargs)
-            log_event(action="Create_A_record", hostname=fqdn, **log_dict)
+            log_event(action="create-A-record", hostname=fqdn, **log_dict)
             tmp_log("Added A Record, fqdn: %s IP: %s", fqdn, host)
         except Exception as exc:
-            log_event(action="Create_A_record", hostname=fqdn,
+            log_event(action="create-A-record", hostname=fqdn,
                       error=str(exc), **log_dict)
 
 
@@ -392,7 +392,7 @@ def run_scripts(auth_context, shell, scripts, cloud_id, host, machine_id,
             tmp_log('executed script_id %s', script['id'])
         elif script.get('inline'):
             tmp_log('will run inline script')
-            log_event(action='deployment_script_started', command=script,
+            log_event(action='deployment-script-started', command=script,
                       **log_dict)
             start_time = time.time()
             retval, output = shell.command(script['inline'])
@@ -404,7 +404,7 @@ def run_scripts(auth_context, shell, scripts, cloud_id, host, machine_id,
                         machine_id=machine_id, machine_name=machine_name,
                         command=script, output=output, duration=execution_time,
                         retval=retval, error=retval > 0)
-            log_event(action='deployment_script_finished',
+            log_event(action='deployment-script-finished',
                       error=retval > 0, return_value=retval,
                       command=script, stdout=output,
                       **log_dict)
