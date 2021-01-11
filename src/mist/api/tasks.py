@@ -141,7 +141,7 @@ def post_deploy_steps(self, owner_id, cloud_id, machine_id, monitoring,
                                       state__ne='terminated')
 
         log_dict = {
-            'owner_id': owner.id,
+            'org': owner.id,
             'event_type': 'job',
             'cloud_id': cloud_id,
             'machine_id': machine.id,
@@ -240,7 +240,7 @@ def post_deploy_steps(self, owner_id, cloud_id, machine_id, monitoring,
                                         key_id=key_id, ssh_user=ssh_user,
                                         shell=shell)
                 log_dict = {
-                    'owner_id': owner.id,
+                    'org': owner.id,
                     'event_type': 'job',
                     'cloud_id': cloud_id,
                     'machine_id': machine.id,
@@ -716,7 +716,7 @@ def group_machines_actions(owner_id, action, name, machines_uuids):
         'schedule_name': schedule.name,
         'description': schedule.description or '',
         'schedule_type': str(schedule.schedule_type or ''),
-        'owner_id': owner_id,
+        'org': owner_id,
         'machines_match': schedule.get_ids(),
         'machine_action': action,
         'expires': str(schedule.expires or ''),
@@ -782,7 +782,7 @@ def run_machine_action(owner_id, action, name, machine_uuid):
     schedule = Schedule.objects.get(owner=owner_id, name=name, deleted=None)
 
     log_dict = {
-        'owner_id': owner_id,
+        'org': owner_id,
         'event_type': 'job',
         'machine_uuid': machine_uuid,
         'schedule_id': schedule.id,
@@ -926,7 +926,7 @@ def group_run_script(owner_id, script_id, name, machines_uuids, params=''):
         'schedule_name': schedule.name,
         'description': schedule.description or '',
         'schedule_type': str(schedule.schedule_type or ''),
-        'owner_id': owner_id,
+        'org': owner_id,
         'machines_match': schedule.get_ids(),
         'script_id': script_id,
         'expires': str(schedule.expires or ''),
@@ -975,7 +975,7 @@ def run_script(owner, script_id, machine_uuid, params='', host='',
         owner = Owner.objects.get(id=owner)
 
     ret = {
-        'owner_id': owner.id,
+        'org': owner.id,
         'job_id': job_id or uuid.uuid4().hex,
         'job': job,
         'script_id': script_id,
