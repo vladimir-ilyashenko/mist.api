@@ -745,6 +745,7 @@ rtype_to_classpath = {
     'secret': 'mist.api.secrets.models.VaultSecret',
     'rule': 'mist.api.rules.models.Rule',
     'size': 'mist.api.clouds.models.CloudSize',
+    'team': 'mist.api.users.models.Team'
 }
 
 if config.HAS_VPN:

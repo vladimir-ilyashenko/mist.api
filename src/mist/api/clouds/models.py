@@ -332,14 +332,34 @@ class CloudLocation(OwnershipMixin, me.Document):
     }
 
     def __str__(self):
-        name = "%s, %s (%s)" % (self.name, self.cloud.id, self.external_id)
+        # this is for mongo medthod objects.only('id') to work..
+        if self.cloud:
+            name = "%s, %s (%s)" % (self.name, self.cloud.id, self.external_id)
+        else:
+            name = f"{self.name}, None, {self.external_id}"
         return name
+
+    def as_dict_v2(self, deref='auto', only=''):
+        from mist.api.helpers import prepare_dereferenced_dict
+        standard_fields = [
+            'id', 'name', 'external_id', 'country', 'extra']
+        deref_map = {
+            'cloud': 'title',
+            'owned_by': 'email',
+            'created_by': 'email',
+            'available_sizes': 'name',
+            'available_images': 'name',
+        }
+        ret = prepare_dereferenced_dict(standard_fields, deref_map, self,
+                                        deref, only)
+
+        return ret
 
     def as_dict(self):
         return {
             'id': self.id,
             'extra': self.extra,
-            'cloud': self.cloud.id,
+            'cloud': self.cloud.id if self.cloud else None,  # same as above
             'external_id': self.external_id,
             'name': self.name,
             'country': self.country,
@@ -384,13 +404,30 @@ class CloudSize(me.Document):
     }
 
     def __str__(self):
-        name = "%s, %s (%s)" % (self.name, self.cloud.id, self.external_id)
+        # this is for mongo medthod objects.only('id') to work..
+        if self.cloud:
+            name = "%s, %s (%s)" % (self.name, self.cloud.id, self.external_id)
+        else:
+            name = f"{self.name}, None, {self.external_id}"
         return name
+
+    def as_dict_v2(self, deref='auto', only=''):
+        from mist.api.helpers import prepare_dereferenced_dict
+        standard_fields = [
+            'id', 'name', 'external_id', 'cpus', 'ram', 'bandwidth', 'disk',
+            'architecture', 'allowed_images', 'extra']
+        deref_map = {
+            'cloud': 'title'
+        }
+        ret = prepare_dereferenced_dict(standard_fields, deref_map, self,
+                                        deref, only)
+
+        return ret
 
     def as_dict(self):
         return {
             'id': self.id,
-            'cloud': self.cloud.id,
+            'cloud': self.cloud.id if self.cloud else None,  # same as above
             'external_id': self.external_id,
             'name': self.name,
             'cpus': self.cpus,
@@ -671,6 +708,16 @@ class KubeVirtCloud(Cloud):
 
     _private_fields = ('password', 'key_file', 'cert_file', 'ca_cert_file')
     _controller_cls = controllers.KubeVirtMainController
+
+
+class CloudSigmaCloud(Cloud):
+
+    username = me.StringField(required=True)
+    password = me.StringField(required=True)
+    region = me.StringField(required=True)
+
+    _private_fields = ('password', )
+    _controller_cls = controllers.CloudSigmaMainController
 
 
 _populate_clouds()
